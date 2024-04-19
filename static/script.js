@@ -54,3 +54,62 @@ function addTickerToGrid(ticker) {
     <button class = "remove-btn" data-ticker="${ticker}">Remove</button>
     </div>`)
 }
+
+function updatePrices() {
+    tickers.forEach(function (ticker) {
+        $.ajax({
+            url: '/get_stock_data',
+            type: 'POST',
+            data: JSON.stringify({'ticker': ticker}),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(data) {
+                var changePercent = ((data.currentPrice - data.openPrice) / data.openPrice) * 100;
+                var colorClass;
+                switch(changePercent) {
+                    case (changePercent<= -2):
+                        colorClass = 'dark-red';
+                    case (changePercent< 0):
+                        colorClass = 'red';
+                    case (changePercent== 0):
+                        colorClass = 'gray';
+                    case (changePercent<= 2):
+                        colorClass = 'green';
+                    case (changePercent> 2):
+                        colorClass = 'dark-green'; 
+                }
+                /**if(changePercent <= -2) {
+                    colorClass = 'dark-red'
+                } else if (changePercent < 0) {
+                    colorClass = 'red'
+                } else if (changePercent == 0) {
+                    colorClass = 'gray'
+                } else if (changePercent <= 2) {
+                    colorClass = 'green'
+                } else {
+                    colorClass = 'dark-green'
+                }**/
+
+                $(`#${ticker}-price`).text('$${data.currentPrice.toFixed(2)}');
+                $(`#${ticker}-pct`).text('${changePercent.toFixed(2)}%');
+                $(`#${ticker}-price`).removeClass('dark-red red gray green dark-green').addClass(colorClass);
+                $(`#${ticker}-pct`).removeClass('dark-red red gray green dark-green').addClass(colorClass);
+
+                var flashClass;
+                if(lastPrices[ticker] > data.currentPrice) {
+                    flashClass = 'red-flash';
+                } else if (lastPrices[ticker] < data.currentPrice) {
+                    flashClass = 'green-flash';
+                } else {
+                    flashClass = 'gray-flash';
+                }
+                lastPrices[ticker] = data.currentPrice;
+
+                $(`#${ticker}`).addClass(flashClass);
+                setTimeout(function() {
+                    $(`#${ticker}`).removeClass(flashClass);
+                }, 1000);
+            }
+        });
+    });
+}
