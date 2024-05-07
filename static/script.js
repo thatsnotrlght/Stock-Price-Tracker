@@ -1,12 +1,12 @@
 // Retrieves JSON String containing users 'tickers' from browsers localStorage and parses JSON String and converts to JavaScript object (array in this case)
 var tickers = JSON.parse(localStorage.getItem('tickers')) || [];
 var lastPrices = {};
-var counter = 10;
+var counter = 15;
 
 
 function startUpdateCycle() {
     updatePrices();
-    var countdown = setInterval(function() {
+   setInterval(function() {
         counter--;
         $('#counter').text(counter);
         if (counter <= 0) {
@@ -19,15 +19,16 @@ function startUpdateCycle() {
 $(document).ready(function () {
 
     tickers.forEach(function(ticker) {
-        addTickerToGrid();
+        addTickerToGrid(ticker);
     });
 
     updatePrices();
-
+    
+    // Checks to see if ticker already exists in grid, se
     $('#add-ticker-form').submit(function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Stop browser from reloading or navigating away
         var newTicker = $('#new-ticker').val().toUpperCase();
-        if (!ticker.includes(newTicker)) {
+        if (!tickers.includes(newTicker)) {
             tickers.push(newTicker);
             localStorage.setItem('tickers', JSON.stringify(tickers))
             addTickerToGrid(newTicker);
@@ -47,7 +48,7 @@ $(document).ready(function () {
 });
 
 function addTickerToGrid(ticker) {
-    $('#ticker-grid').append(`<div id = "${ticker}" class="stock-box">
+    $('#tickers-grid').append(`<div id = "${ticker}" class="stock-box">
     <h2>${ticker}</h2>
     <p id="${ticker}-price"></p>
     <p id = "${ticker}-pct"></p>
@@ -66,7 +67,7 @@ function updatePrices() {
             success: function(data) {
                 var changePercent = ((data.currentPrice - data.openPrice) / data.openPrice) * 100;
                 var colorClass;
-                switch(changePercent) {
+                /**switch(changePercent) {
                     case (changePercent<= -2):
                         colorClass = 'dark-red';
                     case (changePercent< 0):
@@ -77,8 +78,8 @@ function updatePrices() {
                         colorClass = 'green';
                     case (changePercent> 2):
                         colorClass = 'dark-green'; 
-                }
-                /**if(changePercent <= -2) {
+                }**/
+                if(changePercent <= -2) {
                     colorClass = 'dark-red'
                 } else if (changePercent < 0) {
                     colorClass = 'red'
@@ -88,10 +89,10 @@ function updatePrices() {
                     colorClass = 'green'
                 } else {
                     colorClass = 'dark-green'
-                }**/
+                }
 
-                $(`#${ticker}-price`).text('$${data.currentPrice.toFixed(2)}');
-                $(`#${ticker}-pct`).text('${changePercent.toFixed(2)}%');
+                $(`#${ticker}-price`).text(`$${data.currentPrice.toFixed(2)}`);
+                $(`#${ticker}-pct`).text(`${changePercent.toFixed(2)}%`);
                 $(`#${ticker}-price`).removeClass('dark-red red gray green dark-green').addClass(colorClass);
                 $(`#${ticker}-pct`).removeClass('dark-red red gray green dark-green').addClass(colorClass);
 
